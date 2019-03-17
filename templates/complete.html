@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en" style="background-color: #659DBD;">
+<head>
+    <meta charset="UTF-8">
+    <title>Complete</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+</head>
+<body onload="setupPage()" style="background-color: #659DBD;padding:20px">
+
+<!--<img src="{{url_for('send_image', filename=files[0])}}">-->
+<div class="jumbotron" id="main" style="background-color: #659DBD; color: white">⚙️<br>⚙<br>️⚙️️</div>
+
+</body>
+</html>
+
+<script>
+    var filesWScores = [];
+
+    // Sets javascript variable to files python variable
+
+
+    function setupPage(){
+
+        var files = {{ files|tojson }};
+        var scores = {{ scores|tojson }};
+        var photoNumber = {{ numberSpecified|tojson }};
+
+        var body = document.getElementById("main");
+
+        if(photoNumber > files.length){
+            body.innerHTML = "<h3>Error: You specified more photos to return than you provided</h3>";
+            return;
+        }
+
+        var errorFiles = [];
+
+        for(var i = 0; i < files.length; i++){
+            if(scores[i] != ""){
+                filesWScores.push([files[i], scores[i]]);
+            } else {
+                errorFiles.push(files[i]);
+            }
+
+        }
+
+        for(var i = 0; i < filesWScores.length; i++){
+            if(filesWScores[i][1].length > 1){
+                var personFromLeft = prompt("What person from the left are you in " + filesWScores[i][0] + "? (ex: 1, 2, 4, etc.)");
+
+                if(personFromLeft < filesWScores[i][1].length) {
+                    filesWScores[i][1] = filesWScores[i][1][personFromLeft - 1];
+                } else {
+                    errorFiles.push(filesWScores[i][0]);
+                    filesWScores.splice(i,1);
+                }
+            }
+        }
+
+
+        var sortedFilesWScores = filesWScores.sort(function(a, b){return b[1] - a[1]});
+
+        var matches = [];
+
+        for(var i = 0; i < photoNumber; i++){
+            matches.push(sortedFilesWScores[i]);
+        }
+
+        body.innerHTML = "<h3>You Look Best In These (According To 🤖)</h3>";
+        body.innerHTML += "<hr class='my-4'>";
+
+        body.innerHTML += "<ul class='list-group'>";
+        for(var i = 0; i < matches.length; i++){
+
+            body.innerHTML += "<h5>" + (i + 1) + ". " + matches[i][0] + " <span class='badge badge-secondary'>" + "Score: " + matches[i][1] + "</span></h5>"
+        }
+        body.innerHTML += "</ul>";
+
+        body.innerHTML += "<br><br>"
+
+        body.innerHTML += "<h3>Couldn't Process The Following</h3>";
+        body.innerHTML += "<h6>Possible Errors:</h6>";
+        body.innerHTML += "<ul class='list-group'>";
+        body.innerHTML += "<li>Image did not have any identifiable faces in it</li>";
+        body.innerHTML += "<li>The face from the left you chose when prompted was invalid (greater than amount of faces in picture)</li>";
+        body.innerHTML += "</ul>";
+        body.innerHTML += "<hr class='my-4'>";
+
+        body.innerHTML += "<ul class='list-group'>";
+        for(var i = 0; i < errorFiles.length; i++){
+            body.innerHTML += "<h5>" + (i + 1) + ". " + errorFiles[i] + "</h5>";
+        }
+        body.innerHTML += "</ul>";
+    }
+
+</script>
